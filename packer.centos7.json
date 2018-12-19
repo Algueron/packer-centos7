@@ -1,4 +1,12 @@
 {
+  "variables": {
+    "postgre_user": "",
+    "postgre_password": "",
+    "postgre_db": ""
+  },
+  
+  "sensitive-variables": [ "postgre_password" ],
+  
   "builders": [
     {
       "type": "virtualbox-iso",
@@ -41,6 +49,15 @@
       "type": "shell",
       "execute_command": "echo 'umanis' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
       "script": "scripts/ansible.sh"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "ansible/01_PostgreSQL.yml"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "ansible/02_CreateDb.yml",
+      "extra_arguments": [ "--extra-vars \"postgre_db={{ user `postgre_db`}} postgre_user={{ user `postgre_user`}} postgre_password={{ user `postgre_password`}}\"" ]
     }
   ]
 }

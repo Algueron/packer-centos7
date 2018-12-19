@@ -1,0 +1,25 @@
+- hosts: all
+  become: yes
+  tasks:
+
+  - name: Install psycopg2 packages
+    yum:
+      name:
+        - python-psycopg2
+      state: latest
+
+  - name: Creates PostgreSQL Database
+    postgresql_db:
+      name: "{{ postgre_db }}"
+    become: yes
+    become_user: postgres
+
+  - name: Creates requested user for PostgreSQL
+    postgresql_user:
+      name: "{{ postgre_user }}"
+      encrypted: no
+      password: "{{ postgre_password }}"
+      db: "{{ postgre_db }}"
+      priv: ALL
+    become: yes
+    become_user: postgres

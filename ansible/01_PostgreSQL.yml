@@ -1,0 +1,59 @@
+- hosts: all
+  become: yes
+  tasks:
+
+  - name: Creates postgres user
+    user:
+      name: postgres
+      state: present
+      shell: /bin/bash
+      system: no
+      createhome: no
+
+  - name: Install PostgreSQL package
+    yum:
+      name: postgresql-server
+      state: latest
+
+  - name: Initializes Postgre Cluster
+    shell: postgresql-setup initdb
+
+  - name: Allows login/password connections on IPv4
+    replace:
+      path: /var/lib/pgsql/data/pg_hba.conf
+      regexp: 'host    all             all             127\.0\.0\.1/32            ident'
+      replace: 'host    all             all             127.0.0.1/32            md5'
+
+  - name: Allows login/password connections on IPv6
+    replace:
+      path: /var/lib/pgsql/data/pg_hba.conf
+      regexp: 'host    all             all             ::1/128                 ident'
+      replace: 'host    all             all             ::1/128                 md5'
+
+  - name: Make PostgreSQL listen on all addresses
+    lineinfile:
+      path: /var/lib/pgsql/data/postgresql.conf
+      line: "listen_addresses = 'localhost'"
+
+  - name: Make PostgreSQL listen on port 5432
+    lineinfile:
+      path: /var/lib/pgsql/data/postgresql.conf
+      line: "port = 5432"
+
+  - name: Make PostgreSQL not treat backslahes as escape caracter
+    lineinfile:
+      path: /var/lib/pgsql/data/postgresql.conf
+      line: "standard_conforming_strings = off"
+
+  - name: Open port 5432 (TCP)
+    firewalld:
+      port: 5432/tcp
+      permanent: true
+      state: enabled
+      immediate: yes
+
+  - name: Starts and enables postgresql
+    systemd:
+      name: postgresql
+      state: started
+      enabled: yes

@@ -13,4 +13,4 @@ Initializes a blank Centos 7 VM image using Packer
 
 Make sure all the required software (listed above) is installed, then cd to the directory containing this README.md file, and run:
 
-    $ packer build packer.centos7.json
+    $ packer build -var "postgre_db=mydb" -var "postgre_user=myuser" -var "postgre_password=123456" packer.centos7.json
